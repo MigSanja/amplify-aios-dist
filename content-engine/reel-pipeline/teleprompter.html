@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Teleprompter · Video-Aufnahme</title>
+<style>
+  /* Marken-Farben (identisch zu Dashboard + Website) */
+  :root {
+    --bg:#03070e; --raise:#060d18; --panel:#0a1826;
+    --txt:#cfe6f5; --bright:#eaf6ff; --muted:#6f88a6;
+    --cyan:#36e0ff; --teal:#3fd0c9; --gold:#ffb547; --red:#ff5f6d; --green:#54e08a;
+    --line:rgba(54,224,255,.18);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--txt); font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif; height:100vh; overflow:hidden; }
+  #stage { position:relative; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+  /* Canvas = WYSIWYG-Vorschau: exakt das, was aufgenommen wird */
+  canvas#rec { max-height:100%; max-width:100%; background:#000; transform:scaleX(-1); box-shadow:0 0 0 1px var(--line), 0 30px 90px rgba(0,0,0,.6); }
+  #prompter { position:absolute; top:0; left:50%; transform:translateX(-50%); width:min(92vw,900px); height:40vh; overflow:hidden; pointer-events:none;
+    -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 15%,#000 76%,transparent 100%);
+    mask-image:linear-gradient(180deg,transparent 0,#000 15%,#000 76%,transparent 100%); }
+  #scroll { padding:17vh 24px 40vh; font-size:44px; font-weight:700; line-height:1.5; text-align:center; color:#fff; text-shadow:0 2px 16px rgba(0,0,0,.95); will-change:transform; }
+  #scroll .hl { color:var(--cyan); }
+  #bar { position:absolute; bottom:0; left:0; right:0; display:flex; gap:12px; align-items:center; justify-content:center; padding:14px 18px; flex-wrap:wrap;
+    background:linear-gradient(180deg,transparent,rgba(3,7,14,.94) 45%); }
+  button, select { background:var(--panel); color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:11px 16px; font-size:15px; font-weight:700; cursor:pointer; font-family:inherit; }
+  button:hover { border-color:var(--cyan); color:var(--bright); }
+  button.on { background:rgba(54,224,255,.14); border-color:var(--cyan); color:var(--cyan); }
+  button.rec { background:var(--red); border-color:var(--red); color:#fff; }
+  button.rec.live { animation:pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity:.55; } }
+  .grp { display:flex; gap:6px; align-items:center; }
+  label { font-size:11px; color:var(--muted); display:flex; flex-direction:column; gap:3px; align-items:center; letter-spacing:.08em; text-transform:uppercase; }
+  input[type=range] { accent-color:var(--cyan); width:130px; }
+  #editor { position:absolute; inset:0; background:rgba(3,7,14,.97); display:flex; flex-direction:column; gap:14px; padding:5vh 7vw; z-index:9; }
+  #editor h1 { font-size:24px; color:var(--bright); font-weight:800; letter-spacing:-.01em; }
+  #editor h1 span { color:var(--cyan); }
+  #editor p { color:var(--muted); font-size:13.5px; line-height:1.6; }
+  textarea { flex:1; background:var(--raise); border:1px solid var(--line); border-radius:14px; color:var(--bright); font-size:19px; line-height:1.6; padding:20px; resize:none; outline:none; font-family:inherit; }
+  textarea:focus { border-color:var(--cyan); }
+  #cd { position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:190px; font-weight:900; color:var(--cyan); text-shadow:0 0 80px rgba(54,224,255,.6); z-index:8; }
+  #info { position:absolute; top:12px; right:16px; font-size:11.5px; color:var(--muted); text-align:right; line-height:1.7; z-index:5; }
+  #info b { color:var(--cyan); font-weight:700; }
+  #info .warn { color:var(--gold); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="rec"></canvas>
+  <div id="prompter"><div id="scroll"></div></div>
+  <div id="cd"></div>
+  <div id="info"><div id="resInfo">Kamera startet…</div><div>Space: Start/Stopp · ↑↓: Tempo · R: Aufnahme · E: Skript</div></div>
+  <div id="bar">
+    <button id="btnEdit">✏️ Skript</button>
+    <div class="grp">
+      <button id="f916" class="on" onclick="setFormat('9:16')">▯ Reel 9:16</button>
+      <button id="f169" onclick="setFormat('16:9')">▭ YouTube 16:9</button>
+    </div>
+    <select id="camSel" title="Kamera wählen"></select>
+    <button id="btnPlay">▶ Prompter</button>
+    <label>Tempo <input type="range" id="speed" min="10" max="140" value="55"></label>
+    <label>Schrift <input type="range" id="fsize" min="26" max="72" value="44"></label>
+    <button id="btnRec" class="rec">● Aufnahme</button>
+  </div>
+</div>
+
+<div id="editor">
+  <h1>Teleprompter <span>· Video-Aufnahme</span></h1>
+  <p>Skript einfügen — Zeilen mit <b>*</b> am Anfang werden cyan hervorgehoben (Betonung). Dann „Los“:
+  der Text läuft oben nah an der Linse, damit dein Blick dort bleibt. <b>Die Vorschau ist exakt das, was aufgenommen wird</b>
+  (9:16 für Instagram, 16:9 für YouTube — jederzeit umschaltbar). Aufnahme landet als Datei in Downloads;
+  von dort in den Chat droppen: „mach ein Reel draus“.</p>
+  <textarea id="script" placeholder="Hier dein Skript rein…"></textarea>
+  <div><button id="btnStart" class="on">✅ Los</button></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const FORMATS = { "9:16": { w: 1080, h: 1920 }, "16:9": { w: 1920, h: 1080 } };
+let format = "9:16";
+let stream = null, recorder = null, chunks = [], playing = false, y = 0, lastT = 0, raf = null;
+
+const cam = document.createElement("video");
+cam.autoplay = true; cam.playsInline = true; cam.muted = true;
+const canvas = $("rec"), ctx = canvas.getContext("2d", { alpha: false });
+
+function applyFormat() {
+  const f = FORMATS[format];
+  canvas.width = f.w; canvas.height = f.h;
+  canvas.style.aspectRatio = f.w + "/" + f.h;
+  $("f916").classList.toggle("on", format === "9:16");
+  $("f169").classList.toggle("on", format === "16:9");
+  showRes();
+}
+function setFormat(f) {
+  if (recorder && recorder.state === "recording") return alert("Erst Aufnahme stoppen.");
+  format = f; applyFormat();
+}
+applyFormat();
+
+function showRes() {
+  const el = $("resInfo");
+  if (!cam.videoWidth) { el.textContent = "Kamera startet…"; return; }
+  const f = FORMATS[format];
+  const low = cam.videoHeight < 1080;
+  el.innerHTML = "Kamera: <b>" + cam.videoWidth + "×" + cam.videoHeight + "</b> → Aufnahme <b>" + f.w + "×" + f.h + "</b>" +
+    (low ? '<div class="warn">⚠ unter 1080p — bessere Kamera/mehr Licht</div>' : "");
+}
+
+async function listCams(selected) {
+  const devs = await navigator.mediaDevices.enumerateDevices();
+  const cams = devs.filter((d) => d.kind === "videoinput");
+  $("camSel").innerHTML = cams.map((c, i) =>
+    '<option value="' + c.deviceId + '"' + (c.deviceId === selected ? " selected" : "") + ">" +
+    (c.label || "Kamera " + (i + 1)) + "</option>").join("");
+}
+
+async function initCam(deviceId) {
+  try {
+    if (stream) stream.getTracks().forEach((t) => t.stop());
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: Object.assign({ width: { ideal: 3840 }, height: { ideal: 2160 }, frameRate: { ideal: 30 } },
+        deviceId ? { deviceId: { exact: deviceId } } : {}),
+      audio: { echoCancellation: true, noiseSuppression: true },
+    });
+    cam.srcObject = stream;
+    await cam.play();
+    await listCams(stream.getVideoTracks()[0].getSettings().deviceId);
+    setTimeout(showRes, 400);
+  } catch (e) {
+    $("resInfo").innerHTML = '<span class="warn">Kamera-Fehler: ' + e.message + "</span>";
+  }
+}
+initCam();
+$("camSel").onchange = (e) => initCam(e.target.value);
+
+// Zeichen-Schleife: mittiger Ausschnitt im Zielformat → Canvas = Vorschau UND Aufnahme
+function draw() {
+  const vw = cam.videoWidth, vh = cam.videoHeight;
+  if (vw && vh) {
+    const f = FORMATS[format];
+    const tAR = f.w / f.h, sAR = vw / vh;
+    let sw, sh, sx, sy;
+    if (sAR > tAR) { sh = vh; sw = vh * tAR; sx = (vw - sw) / 2; sy = 0; }
+    else { sw = vw; sh = vw / tAR; sx = 0; sy = (vh - sh) / 2; }
+    ctx.drawImage(cam, sx, sy, sw, sh, 0, 0, f.w, f.h);
+  }
+  raf = requestAnimationFrame(draw);
+}
+draw();
+
+function renderScript() {
+  $("scroll").innerHTML = ($("script").value || "").split("\n").map((l) => {
+    const t = l.trim();
+    if (!t) return "<br>";
+    const esc = t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    return t.startsWith("*") ? '<div class="hl">' + esc.slice(1).trim() + "</div>" : "<div>" + esc + "</div>";
+  }).join("");
+}
+$("btnStart").onclick = () => { renderScript(); $("editor").style.display = "none"; resetScroll(); };
+$("btnEdit").onclick = () => { $("editor").style.display = "flex"; playing = false; };
+function resetScroll() { y = 0; $("scroll").style.transform = "translateY(0)"; }
+
+function tick(t) {
+  if (playing) {
+    y += ((t - lastT) / 1000) * Number($("speed").value);
+    if (y > $("scroll").scrollHeight) playing = false;
+    $("scroll").style.transform = "translateY(" + -y + "px)";
+  }
+  lastT = t;
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+function togglePlay() { playing = !playing; $("btnPlay").textContent = playing ? "⏸ Pause" : "▶ Prompter"; }
+$("btnPlay").onclick = togglePlay;
+$("fsize").oninput = () => { $("scroll").style.fontSize = $("fsize").value + "px"; };
+
+async function countdown() {
+  const cd = $("cd"); cd.style.display = "flex";
+  for (const n of ["3", "2", "1"]) { cd.textContent = n; await new Promise((r) => setTimeout(r, 800)); }
+  cd.style.display = "none";
+}
+
+$("btnRec").onclick = async () => {
+  if (recorder && recorder.state === "recording") { recorder.stop(); return; }
+  if (!stream) return alert("Keine Kamera.");
+  await countdown();
+  chunks = [];
+  const mime = MediaRecorder.isTypeSupported("video/mp4;codecs=avc1")
+    ? "video/mp4;codecs=avc1" : "video/webm;codecs=vp9,opus";
+  const mixed = new MediaStream([canvas.captureStream(30).getVideoTracks()[0], stream.getAudioTracks()[0]]);
+  recorder = new MediaRecorder(mixed, { mimeType: mime, videoBitsPerSecond: 12000000 });
+  recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+  recorder.onstop = () => {
+    const ext = mime.startsWith("video/mp4") ? "mp4" : "webm";
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
+    a.href = URL.createObjectURL(new Blob(chunks, { type: mime }));
+    a.download = "aufnahme-" + format.replace(":", "x") + "-" + ts + "." + ext;
+    a.click();
+    $("btnRec").textContent = "● Aufnahme"; $("btnRec").classList.remove("live");
+  };
+  recorder.start();
+  $("btnRec").textContent = "⏹ Stopp"; $("btnRec").classList.add("live");
+  resetScroll(); playing = true; $("btnPlay").textContent = "⏸ Pause";
+};
+
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
+  if (e.code === "Space") { e.preventDefault(); togglePlay(); }
+  if (e.key === "ArrowUp") $("speed").value = Number($("speed").value) + 6;
+  if (e.key === "ArrowDown") $("speed").value = Math.max(10, Number($("speed").value) - 6);
+  if (e.key.toLowerCase() === "r") $("btnRec").click();
+  if (e.key.toLowerCase() === "e") $("btnEdit").click();
+});
+</script>
+</body>
+</html>

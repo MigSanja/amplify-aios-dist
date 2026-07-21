@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "department": "marketing",
+  "model": "claude-sonnet-4-6",
+  "skills": ["customer-research","competitor-profiling","product-marketing","marketing-plan","marketing-ideas","referrals","churn-prevention","onboarding","signup","aso"]
+}

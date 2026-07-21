@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>__LABEL__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>__REPO__/dashboard/run-job.js</string>
+    <string>__REPO__/dashboard/__SCRIPT__</string>
+  </array>
+  <key>StandardOutPath</key><string>__REPO__/dashboard/__LOG__</string>
+  <key>StandardErrorPath</key><string>__REPO__/dashboard/__LOG__</string>
+  <!-- __SCHEDULE__  (z.B. <key>StartCalendarInterval</key>... ODER <key>StartInterval</key><integer>600</integer> ODER <key>RunAtLoad</key><true/>) -->
+  <key>AbandonProcessGroup</key><true/>
+</dict>
+</plist>

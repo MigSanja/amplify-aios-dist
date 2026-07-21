@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "department": "sales",
+  "role": "Lead Sourcing",
+  "channel": "email",
+  "model": "claude-sonnet-4-6",
+  "selfContained": true,
+  "pipeline": ["create-batch-sheet", "source-gmaps", "import-maps", "find-gf", "verify-emails"],
+  "scriptsDir": "~/AIOS/agents/lead-sourcing",
+  "keysFile": "~/AIOS/agents/lead-sourcing/.env",
+  "keys": ["APIFY_TOKEN", "ANYMAILFINDER_API_KEY", "MILLIONVERIFIER_API_KEY"],
+  "driveFolder": { "name": "Lead Scraping", "id": "" },
+  "defaultSheet": "",
+  "sources": { "live": ["apify-google-maps"], "geplant": ["das-oertliche", "google-search"] },
+  "icp": "<DEIN_ICP>",
+  "skill": ".claude/skills/lead-sourcing/SKILL.md",
+  "_hinweis": "Eigenständiger Sales-Agent. Kein Versand (später eigener Kampagnen-Agent via Instantly)."
+}

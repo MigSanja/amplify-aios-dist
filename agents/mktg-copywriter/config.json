@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "department": "marketing",
+  "model": "claude-sonnet-4-6",
+  "skills": ["copywriting","copy-editing","offers","marketing-psychology","pricing","paywalls","cold-email"]
+}

@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "department": "marketing",
+  "model": "claude-sonnet-4-6",
+  "skills": ["content-strategy","social","video","image","public-relations","launch","community-marketing","co-marketing"]
+}

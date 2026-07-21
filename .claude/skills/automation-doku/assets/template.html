@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automations-Doku — Titel hier</title>
+<style>
+  :root{
+    /* ---- FARBEN: nur diese Zeilen anpassen, um das Branding zu wechseln ---- */
+    --ground:#f5f8f7;     /* Seitenhintergrund */
+    --surface:#ffffff;    /* Karten/Figuren */
+    --ink:#14201e;        /* Haupttext */
+    --muted:#586a66;      /* Sekundärtext */
+    --faint:#8a9a96;      /* zarter Text, Nummern */
+    --line:#e2ebe8;       /* Trennlinien, Rahmen */
+    --brand:#0d9488;      /* Primärfarbe (Akzent, Links, Sektions-Labels) */
+    --brand-d:#0f766e;    /* dunklere Primärfarbe */
+    --brand-wash:#eafaf6; /* heller Primär-Hintergrund für Callouts */
+    --accent:#ea580c;     /* Sekundärakzent (Legenden-Nummern, Warnungen) */
+    --accent-wash:#fff3ea;
+    --info:#2563eb;       /* Info-Blau */
+    --info-wash:#eef3fe;
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0}
+  .wrap{background:var(--ground);color:var(--ink);font-family:var(--sans);
+    font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 20px 80px}
+  .col{max-width:820px;margin:0 auto}
+
+  /* Kopf */
+  .masthead{padding:56px 0 30px;border-bottom:2px solid var(--brand);margin-bottom:8px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.12em;
+    text-transform:uppercase;font-size:13px;color:var(--brand-d)}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+  h1{font-size:clamp(30px,5vw,46px);line-height:1.08;letter-spacing:-.02em;margin:.5em 0 .15em;
+    text-wrap:balance;font-weight:800}
+  .lede{font-size:19px;color:var(--muted);max-width:62ch;margin:0}
+  .kicker{color:var(--faint);font-size:14px;font-weight:600;margin-top:6px;letter-spacing:.02em}
+
+  /* Sektionen */
+  section{margin-top:52px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.14em;color:var(--brand-d);
+    font-weight:700;margin:0 0 6px;display:flex;align-items:baseline;gap:10px}
+  h2 .n{font-family:var(--mono);color:var(--faint);font-size:13px}
+  h3{font-size:26px;line-height:1.15;letter-spacing:-.01em;margin:.1em 0 .5em;font-weight:750;
+    text-wrap:balance}
+  p{margin:0 0 16px;max-width:66ch}
+  strong{font-weight:680}
+
+  /* Bild / Diagramm */
+  figure{margin:26px 0 12px;background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(20,32,30,.04),0 12px 30px -18px rgba(20,32,30,.18)}
+  figure img{width:100%;height:auto;display:block;border-radius:8px}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{font-size:14px;color:var(--faint);margin-top:12px;text-align:center;font-style:italic}
+
+  /* Nummerierte Legende (annotiert ein Diagramm/Screenshot) */
+  .legend{list-style:none;counter-reset:c;padding:0;margin:14px 0 8px;display:grid;gap:12px}
+  .legend li{display:flex;gap:14px;align-items:flex-start}
+  .legend .num{counter-increment:c;flex:0 0 auto;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center;
+    margin-top:2px}
+  .legend .num::after{content:counter(c)}
+  .legend .ltext{font-size:16px;color:var(--ink)}
+
+  /* Aufzählung mit Punkten */
+  ul.plain{padding-left:0;list-style:none;display:grid;gap:12px;margin:8px 0 16px}
+  ul.plain li{display:flex;gap:12px;align-items:flex-start;font-size:16px}
+  ul.plain li::before{content:"";flex:0 0 auto;width:7px;height:7px;border-radius:50%;
+    background:var(--brand);margin-top:9px}
+
+  /* Callout-Boxen */
+  .note{border-radius:14px;padding:16px 18px;margin:18px 0;font-size:16px;line-height:1.55}
+  .note.brand{background:var(--brand-wash);border:1px solid #bfeee4}
+  .note.accent{background:var(--accent-wash);border:1px solid #ffd6b8}
+  .note.info{background:var(--info-wash);border:1px solid #cfdcfa}
+  .note b{display:block;margin-bottom:2px}
+  .note.brand b{color:var(--brand-d)} .note.accent b{color:#b4400a} .note.info b{color:#1d4ed8}
+
+  /* Key-Value-Tabelle (technische Details, Schritte-Parameter) */
+  .kv{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:16px 0}
+  .kv .row{display:flex;gap:16px;padding:13px 18px;border-top:1px solid var(--line);font-size:15px;flex-wrap:wrap}
+  .kv .row:first-child{border-top:none}
+  .kv .k{flex:0 0 150px;color:var(--muted);font-weight:600}
+  .kv .v{font-family:var(--mono);color:var(--ink);word-break:break-word;font-size:14px}
+
+  /* Zuständigkeits-Tag */
+  .assign{font-family:var(--mono);font-size:13px;background:#eef2f1;color:var(--brand-d);
+    padding:1px 7px;border-radius:5px;font-weight:600}
+
+  /* Schritt-Karten (Ablauf) */
+  .steps{display:grid;gap:14px;margin:18px 0}
+  .step{display:flex;gap:16px;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;padding:16px 18px}
+  .step .sn{flex:0 0 auto;width:30px;height:30px;border-radius:8px;background:var(--brand);
+    color:#fff;font-weight:700;display:grid;place-items:center;font-size:15px}
+  .step .st{font-size:16px}
+  .step .st b{display:block;margin-bottom:2px;color:var(--ink)}
+  .step .st span{color:var(--muted)}
+
+  footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);color:var(--faint);font-size:14px}
+  a{color:var(--brand-d);text-decoration:underline;text-underline-offset:2px}
+  @media(max-width:560px){.wrap{font-size:16px}.kv .k{flex-basis:100%}}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="col">
+
+  <!-- ===================== KOPF ===================== -->
+  <header class="masthead">
+    <div class="brand"><span class="dot"></span> Firmenname · Team-Doku</div>
+    <h1>Was die Automation macht, in einem Satz</h1>
+    <p class="lede">Ein bis zwei Sätze Kontext: wofür ist das da, wem hilft es, was war vorher das Problem. Locker, menschlich, kein Fachjargon.</p>
+    <div class="kicker">Stand: TT.MM.JJJJ · für das Team</div>
+  </header>
+
+  <!-- ===================== SEKTION: Big Picture ===================== -->
+  <section>
+    <h2><span class="n">01</span> Das große Ganze</h2>
+    <h3>So läuft es von oben betrachtet</h3>
+    <p>Kurz erklären, wie die Teile zusammenhängen. Wo greift ein Mensch ein, wo läuft alles von allein.</p>
+
+    <!-- Diagramm: entweder Screenshot (img) ODER inline SVG-Flow -->
+    <figure>
+      <!-- Variante A: Screenshot -->
+      <!-- <img src="data:image/png;base64,..." alt="Ablaufdiagramm"> -->
+
+      <!-- Variante B: einfacher SVG-Flow (Boxen + Pfeile), hier als Muster -->
+      <svg viewBox="0 0 760 150" role="img" aria-label="Ablauf: Buchung, Automation, Handover, Gast">
+        <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#8a9a96"></path></marker></defs>
+        <g font-family="ui-sans-serif,system-ui" font-size="14">
+          <rect x="10" y="45" width="150" height="60" rx="12" fill="#eafaf6" stroke="#bfeee4"></rect>
+          <text x="85" y="80" text-anchor="middle" fill="#0f766e" font-weight="600">Buchung kommt rein</text>
+          <line x1="162" y1="75" x2="205" y2="75" stroke="#8a9a96" stroke-width="2" marker-end="url(#ar)"></line>
+          <rect x="210" y="45" width="150" height="60" rx="12" fill="#ffffff" stroke="#e2ebe8"></rect>
+          <text x="285" y="80" text-anchor="middle" fill="#14201e" font-weight="600">Automation läuft</text>
+          <line x1="362" y1="75" x2="405" y2="75" stroke="#8a9a96" stroke-width="2" marker-end="url(#ar)"></line>
+          <rect x="410" y="45" width="150" height="60" rx="12" fill="#fff3ea" stroke="#ffd6b8"></rect>
+          <text x="485" y="80" text-anchor="middle" fill="#b4400a" font-weight="700">Du übernimmst</text>
+          <line x1="562" y1="75" x2="605" y2="75" stroke="#8a9a96" stroke-width="2" marker-end="url(#ar)"></line>
+          <rect x="610" y="45" width="140" height="60" rx="12" fill="#eafaf6" stroke="#bfeee4"></rect>
+          <text x="680" y="80" text-anchor="middle" fill="#0f766e" font-weight="600">Gast ist glücklich</text>
+        </g>
+      </svg>
+      <figcaption>Der ganze Ablauf. Du steigst nur an der orangen Box ein.</figcaption>
+    </figure>
+
+    <!-- Legende annotiert das Diagramm -->
+    <ol class="legend">
+      <li><span class="num"></span><span class="ltext"><strong>Buchung kommt rein.</strong> Woher, und was passiert automatisch.</span></li>
+      <li><span class="num"></span><span class="ltext"><strong>Automation läuft.</strong> Welche Schritte ohne dich passieren.</span></li>
+      <li><span class="num"></span><span class="ltext"><strong>Du übernimmst.</strong> Genau hier ist dein Job, und nur hier.</span></li>
+    </ol>
+  </section>
+
+  <!-- ===================== SEKTION: Ablauf in Schritten ===================== -->
+  <section>
+    <h2><span class="n">02</span> Schritt für Schritt</h2>
+    <h3>Was konkret passiert</h3>
+    <div class="steps">
+      <div class="step"><span class="sn">1</span><span class="st"><b>Der Auslöser</b><span>Was startet die Automation. In einfachen Worten.</span></span></div>
+      <div class="step"><span class="sn">2</span><span class="st"><b>Die Verarbeitung</b><span>Was das System dann macht.</span></span></div>
+      <div class="step"><span class="sn">3</span><span class="st"><b>Das Ergebnis</b><span>Was am Ende rauskommt und wer es sieht.</span></span></div>
+    </div>
+
+    <div class="note brand"><b>Gut zu wissen</b>Ein hilfreicher Hinweis, der Ängste nimmt oder etwas klarstellt.</div>
+    <div class="note accent"><b>Achtung</b>Etwas, das schiefgehen kann, und wie man es vermeidet.</div>
+    <div class="note info"><b>Tipp</b>Ein kleiner Kniff, der den Alltag leichter macht.</div>
+  </section>
+
+  <!-- ===================== SEKTION: Details / Technik light ===================== -->
+  <section>
+    <h2><span class="n">03</span> Details</h2>
+    <h3>Die wichtigsten Eckdaten</h3>
+    <div class="kv">
+      <div class="row"><div class="k">Läuft in</div><div class="v">Welchem Tool</div></div>
+      <div class="row"><div class="k">Auslöser</div><div class="v">Was es startet</div></div>
+      <div class="row"><div class="k">Zuständig</div><div class="v">Wer im Team</div></div>
+    </div>
+    <ul class="plain">
+      <li>Ein Punkt, der wichtig ist.</li>
+      <li>Noch ein Punkt.</li>
+    </ul>
+  </section>
+
+  <footer>
+    Fragen? Sprich <span class="assign">Name</span> an. · Letzte Aktualisierung: TT.MM.JJJJ
+  </footer>
+
+</div></div>
+</body>
+</html>

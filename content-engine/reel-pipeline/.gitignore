@@ -1,0 +1,12 @@
+node_modules/
+out/
+record/node_modules/
+record/rec-*/
+recordings/
+public/*.mp4
+public/*.mov
+public/*.webm
+public/*.json
+public/*.png
+!public/theboldfont.ttf
+!public/theboldfont-license.rtf

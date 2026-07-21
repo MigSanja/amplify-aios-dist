@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>dein Business – Rechnungstool</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,sans-serif;background:#f4f1fb;display:flex;min-height:100vh;}
+.sidebar{width:320px;background:#fff;border-right:1px solid #e0d9f7;padding:20px;overflow-y:auto;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:8px;margin-bottom:20px;}
+.logo-bolt{font-size:22px;color:#F5A623;}
+.logo-text{font-size:16px;font-weight:700;color:#3d1a78;}
+.section{margin-bottom:16px;}
+.section h3{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#3d1a78;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #ede9ff;display:flex;justify-content:space-between;align-items:center;}
+label{font-size:11px;color:#666;display:block;margin-bottom:2px;margin-top:6px;}
+input{width:100%;border:1px solid #ddd;border-radius:4px;padding:6px 8px;font-size:12px;color:#333;background:#fafafa;}
+input:focus{outline:none;border-color:#3d1a78;background:#fff;}
+.row2{display:flex;gap:6px;}
+.row2>div{flex:1;}
+.pos-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 24px;gap:4px;margin-bottom:4px;align-items:center;}
+.pos-row input{font-size:11px;padding:4px 6px;}
+.del-btn{background:none;border:none;color:#cc4444;cursor:pointer;font-size:14px;}
+.add-pos{background:#f0ecff;color:#3d1a78;border:1px solid #c4b5f7;border-radius:4px;padding:6px 12px;font-size:11px;cursor:pointer;width:100%;margin-top:4px;}
+.export-btn{background:#3d1a78;color:#fff;border:none;border-radius:6px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;}
+.export-btn:hover{background:#5a2da0;}
+.export-btn.secondary{background:#f0ecff;color:#3d1a78;border:1px solid #c4b5f7;}
+.export-btn.secondary:hover{background:#e0d9ff;}
+.export-btn:disabled{opacity:.5;cursor:wait;}
+#save-status{font-size:11px;margin-top:8px;line-height:1.5;color:#3d1a78;min-height:14px;word-break:break-word;}
+.main{flex:1;padding:24px;display:flex;justify-content:center;overflow-y:auto;}
+.preview-wrap{background:#fff;width:794px;min-height:auto;box-shadow:0 2px 16px rgba(0,0,0,0.10);}
+#invoice{width:794px;min-height:1123px;background:#fff;font-family:Arial,sans-serif;font-size:13px;color:#222;display:flex;flex-direction:column;}
+.inv-header{background:#3d1a78;padding:22px 32px;display:flex;justify-content:space-between;align-items:center;}
+.inv-logo{color:#fff;font-size:18px;font-weight:700;}
+.inv-logo span{color:#F5A623;}
+.inv-logo-sub{color:#c4b5f7;font-size:10px;margin-top:2px;}
+.inv-nr{text-align:right;color:#F5A623;font-size:12px;font-weight:700;}
+.inv-nr small{display:block;color:#c4b5f7;font-size:10px;font-weight:400;}
+.inv-body{padding:28px 32px;flex:1;}
+.addr-row{display:flex;justify-content:space-between;margin-bottom:20px;}
+.addr-to{font-size:12px;line-height:1.7;}
+.addr-to-label{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#999;margin-bottom:2px;}
+.addr-from{font-size:11px;line-height:1.7;color:#555;text-align:right;}
+.meta-bar{display:flex;margin-bottom:20px;border:1px solid #ede9ff;border-radius:6px;overflow:hidden;}
+.meta-item{flex:1;padding:10px 14px;background:#f7f4ff;}
+.meta-item:not(:last-child){border-right:1px solid #ede9ff;}
+.meta-item label{font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:#999;display:block;}
+.meta-item span{font-size:12px;font-weight:700;color:#3d1a78;}
+table.pos{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.pos thead tr{background:#3d1a78;}
+.pos thead th{color:#fff;font-size:11px;padding:9px 10px;text-align:left;font-weight:600;}
+.pos thead th:nth-child(2),.pos thead th:nth-child(3){text-align:center;}
+.pos thead th:last-child{text-align:right;}
+.pos tbody tr{border-bottom:1px solid #f0ecff;}
+.pos tbody td{padding:10px;font-size:12px;color:#333;}
+.pos tbody td:nth-child(2),.pos tbody td:nth-child(3){text-align:center;}
+.pos tbody td:last-child{text-align:right;}
+.totals{display:flex;justify-content:flex-end;margin-bottom:20px;}
+.totals-box{width:260px;}
+.t-row{display:flex;justify-content:space-between;padding:5px 8px;font-size:12px;color:#555;border-bottom:1px solid #f0ecff;}
+.t-row.total{background:#3d1a78;color:#fff;font-weight:700;font-size:14px;border-radius:4px;border:none;margin-top:4px;padding:9px 10px;}
+.t-row.total span:last-child{color:#F5A623;}
+.notes{background:#f7f4ff;border-left:3px solid #3d1a78;padding:12px 16px;border-radius:0 6px 6px 0;font-size:11px;color:#555;line-height:1.8;margin-bottom:20px;}
+.notes strong{color:#3d1a78;}
+.sig{margin-bottom:24px;}
+.sig-name{font-size:20px;font-style:italic;color:#3d1a78;font-family:Georgia,serif;margin-bottom:4px;}
+.sig-sub{font-size:11px;color:#555;}
+.inv-footer{background:#3d1a78;padding:14px 32px;display:flex;justify-content:space-between;}
+.inv-footer div{font-size:10px;color:#c4b5f7;line-height:1.7;}
+.inv-footer strong{color:#fff;display:block;}
+
+@page{size:A4;margin:0;}
+@media print{
+  .sidebar{display:none!important;}
+  .main{padding:0!important;}
+  body{background:#fff;}
+  .preview-wrap{box-shadow:none;width:100%;}
+  #invoice{width:100%;}
+}
+
+/* Kunden-Dropdown */
+.cust-row{display:flex;gap:6px;align-items:center;margin-bottom:8px;}
+.cust-select{flex:1;border:1.5px solid #c4b5f7;border-radius:4px;padding:6px 8px;font-size:12px;color:#3d1a78;background:#f7f4ff;cursor:pointer;font-weight:600;}
+.cust-select:focus{outline:none;border-color:#3d1a78;}
+.add-cust-btn{background:#f0ecff;color:#3d1a78;border:1px solid #c4b5f7;border-radius:4px;padding:6px 8px;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap;}
+.add-cust-btn:hover{background:#e0d9ff;}
+.del-cust-btn{background:none;border:1px solid #f5c6c6;border-radius:4px;padding:6px 7px;color:#cc4444;cursor:pointer;font-size:12px;}
+.del-cust-btn:hover{background:#fff0f0;}
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <div class="logo"><span class="logo-bolt">⚡</span><span class="logo-text">dein Business</span></div>
+  <div class="section">
+    <h3>Meine Daten</h3>
+    <label>Firmenname</label><input id="f_firma" value="">
+    <label>Name</label><input id="f_name" value="">
+    <label>Adresse</label><input id="f_addr" value="">
+    <label>Telefon</label><input id="f_tel" value="">
+    <label>E-Mail</label><input id="f_email" value="">
+  </div>
+
+  <div class="section">
+    <h3>Kunde</h3>
+    <div class="cust-row">
+      <select class="cust-select" id="cust-select" onchange="loadCustomer(this.value)"></select>
+      <button class="add-cust-btn" onclick="saveCurrentCustomer()" title="Aktuellen Kunden speichern">+ Neu</button>
+      <button class="del-cust-btn" onclick="deleteActiveCustomer()" title="Vorlage löschen">✕</button>
+    </div>
+    <label>Firmenname</label><input id="k_firma">
+    <label>Ansprechpartner</label><input id="k_name">
+    <label>Adresse</label><input id="k_addr">
+    <label>PLZ / Ort</label><input id="k_plz">
+    <label>E-Mail (für Rechnungsversand)</label><input id="k_email" type="email" placeholder="kunde@firma.de">
+  </div>
+
+  <div class="section">
+    <h3>Rechnung</h3>
+    <div class="row2">
+      <div><label>Rechnungsnr.</label><input id="r_nr"></div>
+      <div><label>Kunden-Nr.</label><input id="r_knr"></div>
+    </div>
+    <div class="row2">
+      <div><label>Datum</label><input id="r_datum" type="date"></div>
+      <div><label>Fällig am (leer = +14 Tage)</label><input id="r_faellig" type="date"></div>
+    </div>
+  </div>
+  <div class="section">
+    <h3>Positionen</h3>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 24px;gap:4px;margin-bottom:4px;">
+      <span style="font-size:10px;color:#999;">Beschreibung</span>
+      <span style="font-size:10px;color:#999;">Menge</span>
+      <span style="font-size:10px;color:#999;">Preis €</span>
+      <span style="font-size:10px;color:#999;">Gesamt</span>
+      <span></span>
+    </div>
+    <div id="positions"></div>
+    <button class="add-pos" onclick="addPosition()">+ Position hinzufügen</button>
+  </div>
+  <div class="section">
+    <h3>Bankverbindung</h3>
+    <label>Bank</label><input id="b_bank" value="">
+    <label>IBAN</label><input id="b_iban" value="">
+    <label>BIC</label><input id="b_bic" value="">
+  </div>
+  <button class="export-btn" id="btn-save" onclick="saveToDashboard(false)">💾 Speichern ins Dashboard (PDF)</button>
+  <button class="export-btn" id="btn-draft" onclick="saveToDashboard(true)">✉️ Speichern + Gmail-Entwurf</button>
+  <button class="export-btn secondary" onclick="exportPDF()">⬇ PDF nur herunterladen</button>
+  <div id="save-status"></div>
+</div>
+<div class="main">
+  <div class="preview-wrap">
+    <div id="invoice"></div>
+  </div>
+</div>
+<script>
+// ── Kundenverwaltung (serverseitig: /api/rechnung/kunden) ─────────
+const DEFAULT_CUSTOMERS = [];
+
+let customers=JSON.parse(JSON.stringify(DEFAULT_CUSTOMERS));
+let activeCustomerId=null;
+
+async function fetchCustomers(){
+  try{
+    const r=await fetch('/api/rechnung/kunden');
+    const d=await r.json();
+    if(Array.isArray(d.kunden)&&d.kunden.length)customers=d.kunden;
+  }catch(e){/* offline → Defaults */}
+  renderCustomerDropdown();
+}
+function persistCustomers(){
+  fetch('/api/rechnung/kunden',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kunden:customers})}).catch(()=>{});
+}
+
+function renderCustomerDropdown(){
+  const sel=document.getElementById('cust-select');
+  sel.innerHTML='<option value="">– Kunde wählen –</option>';
+  customers.forEach(c=>{
+    const opt=document.createElement('option');
+    opt.value=c.id;
+    opt.textContent=c.name;
+    if(c.id===activeCustomerId)opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+function loadCustomer(id){
+  activeCustomerId=id||null;
+  const c=customers.find(x=>x.id===id);
+  if(!c)return;
+  ['k_firma','k_name','k_addr','k_plz','k_email','r_knr'].forEach(k=>{const el=document.getElementById(k);if(el)el.value=c.data[k]||'';});
+  renderCustomerDropdown();
+  renderInvoice();
+}
+
+function saveCurrentCustomer(){
+  const firma=document.getElementById('k_firma').value.trim();
+  if(!firma){alert('Bitte zuerst einen Firmennamen eingeben.');return;}
+  const existing=customers.find(x=>x.id===activeCustomerId);
+  const data={k_firma:firma,k_name:getVal('k_name'),k_addr:getVal('k_addr'),k_plz:getVal('k_plz'),k_email:getVal('k_email'),r_knr:getVal('r_knr')};
+  if(existing&&confirm('Vorlage "'+existing.name+'" mit den aktuellen Daten überschreiben?\n(Abbrechen = als NEUE Vorlage speichern)')){
+    existing.data=data;
+  }else{
+    const shortName=prompt('Name für die Vorlage:',firma.split(' ').slice(0,2).join(' '));
+    if(!shortName)return;
+    const id='c_'+Date.now();
+    customers.push({id,name:shortName,data});
+    activeCustomerId=id;
+  }
+  persistCustomers();
+  renderCustomerDropdown();
+}
+
+function deleteActiveCustomer(){
+  if(!activeCustomerId)return;
+  const c=customers.find(x=>x.id===activeCustomerId);
+  if(!confirm(`Vorlage "${c?.name}" löschen?`))return;
+  customers=customers.filter(x=>x.id!==activeCustomerId);
+  persistCustomers();
+  activeCustomerId=customers[0]?.id||null;
+  renderCustomerDropdown();
+  if(activeCustomerId)loadCustomer(activeCustomerId);
+}
+
+// ── Positionen ────────────────────────────────────────────────────
+let positions=[{desc:'',qty:'1',price:'0',total:'0'}];
+
+function addPosition(){positions.push({desc:'',qty:'1',price:'0',total:'0'});renderForm();renderInvoice();}
+function removePosition(i){positions.splice(i,1);renderForm();renderInvoice();}
+function calcTotal(i){const q=parseFloat(positions[i].qty)||0;const p=parseFloat(positions[i].price)||0;positions[i].total=(q*p).toFixed(2);}
+function getVal(id){return document.getElementById(id)?.value||'';}
+function formatDate(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day}.${m}.${y}`;}
+function calcNetto(){return positions.reduce((s,p)=>s+(parseFloat(p.total)||0),0);}
+
+function renderForm(){
+  const cont=document.getElementById('positions');
+  cont.innerHTML='';
+  positions.forEach((p,i)=>{
+    const row=document.createElement('div');
+    row.className='pos-row';
+    row.innerHTML=`<input value="${p.desc.replace(/"/g,'&quot;')}" placeholder="Beschreibung" oninput="positions[${i}].desc=this.value;renderInvoice()"><input value="${p.qty}" oninput="positions[${i}].qty=this.value;calcTotal(${i});renderInvoice()"><input value="${p.price}" oninput="positions[${i}].price=this.value;calcTotal(${i});renderInvoice()"><input value="${p.total}" oninput="positions[${i}].total=this.value;renderInvoice()"><button class="del-btn" onclick="removePosition(${i})">✕</button>`;
+    cont.appendChild(row);
+  });
+}
+
+function renderInvoice(){
+  const netto=calcNetto();
+  const rows=positions.map(p=>{const lines=p.desc.split('\n');return`<tr><td>${lines[0]}${lines[1]?`<br><span style="color:#888;font-size:10px;">${lines[1]}</span>`:''}</td><td style="text-align:center">${p.qty}</td><td style="text-align:center">${parseFloat(p.price).toLocaleString('de-DE',{minimumFractionDigits:2})} €</td><td style="text-align:right">${parseFloat(p.total).toLocaleString('de-DE',{minimumFractionDigits:2})} €</td></tr>`;}).join('');
+  document.getElementById('invoice').innerHTML=`<div class="inv-header"><div><div class="inv-logo"><span>⚡</span> ${getVal('f_firma')}</div><div class="inv-logo-sub">dein Business</div></div><div class="inv-nr">Rechnung Nr. ${getVal('r_nr')}<small>Datum: ${formatDate(getVal('r_datum'))}</small></div></div><div class="inv-body"><div class="addr-row"><div><div class="addr-to-label">Rechnungsempfänger</div><div class="addr-to"><strong>${getVal('k_firma')}</strong><br>${getVal('k_name')?getVal('k_name')+'<br>':''}${getVal('k_addr')}<br>${getVal('k_plz')}</div></div><div class="addr-from"><strong>${getVal('f_firma')}</strong><br>${getVal('f_name')}<br>${getVal('f_addr')}<br>Tel.: ${getVal('f_tel')}<br>${getVal('f_email')}</div></div><div class="meta-bar"><div class="meta-item"><label>Rechnungsnr.</label><span>${getVal('r_nr')}</span></div><div class="meta-item"><label>Kunden-Nr.</label><span>${getVal('r_knr')}</span></div><div class="meta-item"><label>Datum</label><span>${formatDate(getVal('r_datum'))}</span></div></div><table class="pos"><thead><tr><th>Beschreibung</th><th>Menge/h</th><th>Einzelpreis/h</th><th>Gesamtpreis</th></tr></thead><tbody>${rows}</tbody></table><div class="totals"><div class="totals-box"><div class="t-row"><span>Summe Netto</span><span>${netto.toLocaleString('de-DE',{minimumFractionDigits:2})} €</span></div><div class="t-row"><span>USt. 0%</span><span>0,00 €</span></div><div class="t-row total"><span>Gesamtsumme</span><span>${netto.toLocaleString('de-DE',{minimumFractionDigits:2})} €</span></div></div></div><div class="notes">Bitte überweisen Sie den fälligen Betrag an mich per Überweisung.<br>Wenn nicht anders angegeben entspricht das Leistungsdatum dem Rechnungsdatum.<br><em>Reverse Charge: Die Steuerschuldnerschaft geht auf den Leistungsempfänger über.</em><br><br><strong>Eine erfolgreiche Weiterempfehlung ist mir 200 € Rabatt wert. Sprechen Sie mich darauf an.</strong><br>Bei Rückfragen stehe ich selbstverständlich jederzeit gerne zur Verfügung.<br>Mit freundlichen Grüßen</div><div class="sig"><div class="sig-name">A. </div><div class="sig-sub">${getVal('f_name')}</div></div></div><div class="inv-footer"><div><strong>${getVal('f_firma')}</strong>${getVal('f_addr')}<br>${getVal('f_email')} · ${getVal('f_tel')}</div><div style="text-align:right"><strong>${getVal('b_bank')}</strong>IBAN: ${getVal('b_iban')}<br>BIC: ${getVal('b_bic')}</div></div>`;
+}
+
+async function exportPDF(){
+  const el=document.getElementById('invoice');
+  const filename='Rechnung_'+getVal('r_nr')+'.pdf';
+  const main=document.querySelector('.main');
+  const prevScroll=main.scrollTop;
+  main.scrollTop=0;
+  await new Promise(r=>setTimeout(r,100));
+  const opt={margin:0,image:{type:'jpeg',quality:0.98},html2canvas:{scale:2,useCORS:true,scrollY:0,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+  const blob=await html2pdf().set(opt).from(el).toPdf().get('pdf').then(pdf=>{
+    const n=pdf.internal.getNumberOfPages();
+    for(let i=n;i>1;i--)pdf.deletePage(i);
+    return pdf.output('blob');
+  });
+  main.scrollTop=prevScroll;
+  try{
+    const fh=await window.showSaveFilePicker({suggestedName:filename,types:[{description:'PDF',accept:{'application/pdf':['.pdf']}}]});
+    const w=await fh.createWritable();
+    await w.write(blob);
+    await w.close();
+  }catch(e){
+    if(e.name!=='AbortError'){
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+    }
+  }
+}
+
+// ── Speichern ins Dashboard (Server: PDF + invoices.json + optional Gmail-Entwurf) ──
+function collectData(){
+  return {
+    f_firma:getVal('f_firma'),f_name:getVal('f_name'),f_addr:getVal('f_addr'),f_tel:getVal('f_tel'),f_email:getVal('f_email'),
+    k_firma:getVal('k_firma'),k_name:getVal('k_name'),k_addr:getVal('k_addr'),k_plz:getVal('k_plz'),k_email:getVal('k_email'),
+    r_nr:getVal('r_nr'),r_knr:getVal('r_knr'),r_datum:getVal('r_datum'),r_faellig:getVal('r_faellig'),
+    b_bank:getVal('b_bank'),b_iban:getVal('b_iban'),b_bic:getVal('b_bic'),
+    positions:positions.filter(p=>(p.desc||'').trim()||parseFloat(p.total))
+  };
+}
+async function saveToDashboard(withDraft){
+  const st=document.getElementById('save-status');
+  const d=collectData();
+  if(!d.r_nr){st.textContent='⚠️ Rechnungsnr. fehlt.';return;}
+  if(!d.k_firma){st.textContent='⚠️ Kunde fehlt.';return;}
+  if(withDraft&&!d.k_email){st.textContent='⚠️ Kunden-E-Mail fehlt (für den Gmail-Entwurf).';return;}
+  const b1=document.getElementById('btn-save'),b2=document.getElementById('btn-draft');
+  b1.disabled=b2.disabled=true;
+  st.textContent='… speichere'+(withDraft?' + erstelle Gmail-Entwurf':'')+' …';
+  try{
+    const r=await fetch('/api/rechnung/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:d,draft:!!withDraft})});
+    const j=await r.json();
+    if(!j.ok)throw new Error(j.error||'unbekannter Fehler');
+    st.innerHTML='✅ Gespeichert: <a href="'+j.pdf+'" target="_blank">PDF</a> · Status offen, fällig '+(j.faellig||'')+(j.draftId?'<br>✉️ Gmail-Entwurf liegt bereit (Gmail → Entwürfe).':'');
+    try{parent.postMessage('invoices-updated','*');}catch(e){}
+  }catch(e){
+    st.textContent='❌ Fehler: '+e.message;
+  }
+  b1.disabled=b2.disabled=false;
+}
+
+// ── Prefill via ?data=<base64url JSON> (für Jarvis/Automation) ────
+function applyPrefill(){
+  try{
+    const q=new URLSearchParams(location.search).get('data');
+    if(!q)return false;
+    const d=JSON.parse(decodeURIComponent(escape(atob(q.replace(/-/g,'+').replace(/_/g,'/')))));
+    Object.entries(d).forEach(([k,v])=>{
+      if(k==='positions'&&Array.isArray(v)){positions=v.map(p=>({desc:String(p.desc||''),qty:String(p.qty||'1'),price:String(p.price||'0'),total:String(p.total||'0')}));return;}
+      const el=document.getElementById(k);if(el)el.value=v;
+    });
+    return true;
+  }catch(e){return false;}
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+document.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',renderInvoice));
+const prefilled=applyPrefill();
+if(!document.getElementById('r_datum').value)document.getElementById('r_datum').value=new Date().toISOString().slice(0,10);
+if(!prefilled){
+  // Nächste Rechnungsnummer vorschlagen: YYYY-MM-NN (laufend pro Monat)
+  fetch('/api/invoices').then(r=>r.json()).then(d=>{
+    if(document.getElementById('r_nr').value)return;
+    const ym=new Date().toISOString().slice(0,7);
+    const n=((d&&d.invoices)||[]).filter(iv=>String(iv.nr||'').startsWith(ym)).length+1;
+    document.getElementById('r_nr').value=ym+'-'+String(n).padStart(2,'0');
+    renderInvoice();
+  }).catch(()=>{});
+}
+fetchCustomers();
+renderForm();
+renderInvoice();
+</script>
+</body>
+</html>

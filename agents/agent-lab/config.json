@@ -1,0 +1,24 @@
+{
+  "id": "agent-lab",
+  "name": "Qualitätsmanager",
+  "role": "CTO — Agent-Qualität: prüft die anderen Agenten, schlägt Fixes vor",
+  "department": "cto",
+  "parentAgent": "jarvis",
+  "active": true,
+  "model": "claude-sonnet-5",
+  "schedule": {
+    "trigger": "launchd",
+    "job": "com.jarvis.agent-lab",
+    "time": "01:30",
+    "timezone": "Europe/Berlin",
+    "interval": "daily"
+  },
+  "limits": {
+    "recommendationsPerRun": 3
+  },
+  "tools": ["bash", "node", "markdown"],
+  "manifest": "dashboard/agent-lab.sh",
+  "logFile": "dashboard/agent-lab.log",
+  "runsIndex": "dashboard/data/agent-lab-runs.jsonl",
+  "description": "Liest nachts die echten Läufe aller Agenten (Reports, Trails, learnings.md, Job-Historie) und schlägt max. 3 belegte Verbesserungen vor. Ändert selbst nichts: Freigabe per Telegram-Button, Ausführung durch den Nacht-Werker."
+}

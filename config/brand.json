@@ -1,0 +1,6 @@
+{
+  "_comment": "Branding fürs Dashboard. Das Onboarding (/aios-setup) füllt das mit der Marke des Nutzers. name = Anzeigename oben links; accent = Akzentfarbe (Hex); logoDataUrl = eigenes Logo als data:-URL (leer = Standard-Zeichen).",
+  "name": "AIOS",
+  "accent": "#36e0ff",
+  "logoDataUrl": ""
+}

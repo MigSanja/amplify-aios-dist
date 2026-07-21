@@ -1,0 +1,26 @@
+{
+  "id": "nightwork",
+  "name": "Nacht-Werker",
+  "role": "CTO — Autonome Systemarbeit, Nachtwerk, Automation",
+  "department": "cto",
+  "parentAgent": "jarvis",
+  "active": true,
+  "schedule": {
+    "trigger": "launchd",
+    "job": "com.jarvis.nightwork",
+    "time": "22:00",
+    "timezone": "Europe/Berlin",
+    "interval": "daily"
+  },
+  "limits": {},
+  "tools": [
+    "bash",
+    "node",
+    "git",
+    "markdown"
+  ],
+  "manifest": "dashboard/nightwork.sh",
+  "logFile": "dashboard/nightwork.launchd.log",
+  "runsIndex": "agents/nightwork/data/heartbeat-runs.jsonl",
+  "description": "Läuft nachts: Obsidian-Graphify, Systemarbeit, Batch-Jobs, Optimierungen. Additiv only, Doku-Pflicht."
+}

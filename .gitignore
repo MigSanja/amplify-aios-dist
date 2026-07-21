@@ -1,0 +1,71 @@
+# ===================================================================
+# AIOS .gitignore — HART. Nichts Persönliches/Geheimes ins Repo.
+# Faustregel: Repo = CODE. Daten/Secrets/Brain bleiben lokal.
+# ===================================================================
+
+# ---- Secrets (NIEMALS committen) ----
+.env
+.env.local
+.env.*.local
+config/secrets.json
+config/.gcreds/
+config/yt-cookies.txt
+config/wise_private.pem
+*.pem
+*.key
+
+# ---- Persönliche Daten / PII / Finanzen ----
+# Leads, Rechnungen, Ausgaben, Verlauf+Media, Logs, Finanzdaten
+dashboard/data/
+outreach/
+archive/
+upwork-projekte/
+sales-copilot/scripts/
+sales-copilot/wissen/
+kermetmeme.jpg
+waitingmeme.png
+
+# ---- Agent-Laufdaten (Aktivität, keine Struktur) ----
+agents/*/runs/
+agents/*/stats.json
+agents/**/.live-*.jsonl
+
+# ---- Persönliches Second Brain (privat, eigenes Repo) ----
+# Enthält Identity, Kunden, Finanzen, Health → gehört NICHT in den Code-Repo.
+brain/
+
+# ---- Build / Cruft ----
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store
+graphify-out/
+*.log
+dashboard/*.launchd.log
+scratchpad/
+
+# generierter Banner-Export
+dashboard/public/starmap/banner.png
+
+# Bildbearbeitung-Tooling (lokal, nicht committen)
+dashboard/tools/.faceswap-venv/
+dashboard/tools/*.onnx
+dashboard/tools/faces/
+
+# Local Netlify folder
+.netlify
+
+# ---- Git-Worktrees (können komplette Repo-Kopien mit PII enthalten) ----
+.claude/worktrees/
+
+# ---- Content-Pipeline: gerenderte Videos / eigene Medien (lokal) ----
+content-engine/reel-pipeline/out/
+content-engine/reel-pipeline/public/*.mp4
+content-engine/reel-pipeline/public/*.webm
+content-engine/reel-pipeline/public/vo*.mp3
+content-engine/reel-pipeline/public/*-deepgram.json
+
+# ---- Assets (eigene Bilder/Memes, lokal) ----
+assets/*
+!assets/.gitkeep
+!assets/README.md

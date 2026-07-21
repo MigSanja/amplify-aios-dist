@@ -1,0 +1,12 @@
+{
+  "_comment": "Ideal Customer Profile: Vorlage. Fülle das im Onboarding (/aios-setup) mit deiner echten Zielgruppe. Wird von Outreach- und Lead-Qualifizierung genutzt.",
+  "zielgruppe": "<DEINE_ZIELGRUPPE>",
+  "region": ["<REGION>"],
+  "merkmale": {
+    "rolle": ["<ZIELROLLE_1>", "<ZIELROLLE_2>"],
+    "team_groesse": "<z.B. 1-20>",
+    "schmerzpunkte": ["<PAIN_1>", "<PAIN_2>", "<PAIN_3>"]
+  },
+  "ausschluss": ["<WEN_NICHT_ANSPRECHEN>"],
+  "kanaele": ["WhatsApp", "Cold Email", "LinkedIn"]
+}

@@ -1,0 +1,18 @@
+{
+  "_comment": "Referenz auf MCPs/APIs/Tools. KEINE Secrets hier — die liegen in ../.env.",
+  "mcps": {
+    "notion": { "use": "Strukturierte Referenz (Tasks, Brain Dumps, Projekte)", "status": "verbunden" },
+    "google_workspace": { "use": "Gmail, Kalender, Drive, Docs, Sheets (lesen+schreiben) — eigener MCP in Copilot-Session", "status": "verbunden", "mcp": "workspace-mcp (pipx), OAuth-Token in config/.gcreds/, Launcher dashboard/google-mcp.sh" },
+    "airtable": { "use": "ICP / Leads", "status": "verfügbar" },
+    "netlify": { "use": "Websites & Mockups deployen", "status": "verfügbar" },
+    "n8n": { "use": "Trigger-Layer (Webhooks, Cron)", "status": "verfügbar" }
+  },
+  "apis": {
+    "anthropic": { "use": "Server-Automations", "env": "ANTHROPIC_API_KEY" },
+    "deepgram": { "use": "Speech-to-Text (Telegram-Sprache)", "env": "DEEPGRAM_API_KEY" },
+    "elevenlabs": { "use": "Jarvis-Stimme / Video-Outreach", "env": "ELEVENLABS_API_KEY" },
+    "telegram": { "use": "Mobiles Interface + Push", "env": "TELEGRAM_BOT_TOKEN" },
+    "supabase": { "use": "pgvector Langzeit-Memory + Link-Tracking", "env": "SUPABASE_URL / SUPABASE_KEY" },
+    "gocardless": { "use": "Open Banking (Finanzen)", "env": "GOCARDLESS_TOKEN" }
+  }
+}

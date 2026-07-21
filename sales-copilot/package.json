@@ -1,0 +1,19 @@
+{
+  "name": "sales-copilot",
+  "version": "0.1.0",
+  "description": "Transparentes Echtzeit-Sales-Coaching-Overlay für Mac (Zoom/Google Meet) mit Claude",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "der Nutzer ",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/packager": "^20.0.1",
+    "electron": "^33.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "dotenv": "^16.4.5"
+  }
+}

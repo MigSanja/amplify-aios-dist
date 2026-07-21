@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIOS — Brain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/starmap/starmap.css">
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<header id="topbar">
+  <span class="brand">AIOS</span>
+  <span class="title">Das <em>Nervensystem</em></span>
+  <span class="spacer"></span>
+  <a class="back" href="/#dashboard">← Dashboard</a>
+  <span id="clock"></span>
+</header>
+
+<aside id="feed"><h2>LIVE-AKTIVITÄT</h2><ul id="feedlist"></ul></aside>
+
+<aside id="panel">
+  <button class="close" aria-label="Schließen">✕</button>
+  <div class="eyebrow" id="p-eyebrow">ABTEILUNG</div>
+  <h3 id="p-name"></h3>
+  <div class="p-sub" id="p-sub"></div>
+  <div class="status" id="p-status"></div>
+  <div class="kpis" id="p-kpis"></div>
+  <h4 id="p-lasth" hidden>LETZTE AKTIVITÄT</h4>
+  <ol id="p-last"></ol>
+  <a class="deep" id="p-deep" href="#">Im Dashboard öffnen →</a>
+</aside>
+
+<div id="bannerline" hidden>
+  <div class="bl-main">Dein Team wächst.<br>Deine Personalkosten nicht.</div>
+  <div class="bl-sub">KI-Betriebssysteme für kleine Teams · 10x Output</div>
+</div>
+
+<div id="hint">KNOTEN&nbsp;ZIEHEN&nbsp;=&nbsp;VERSCHIEBEN&nbsp;·&nbsp;KLICK&nbsp;=&nbsp;INFO&nbsp;·&nbsp;DOPPELKLICK&nbsp;=&nbsp;DASHBOARD&nbsp;·&nbsp;SCROLLEN&nbsp;=&nbsp;ZOOM</div>
+<div id="err" hidden></div>
+
+<script src="/starmap/starmap.js"></script>
+</body>
+</html>

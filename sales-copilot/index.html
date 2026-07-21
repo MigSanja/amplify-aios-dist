@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sales Copilot</title>
+    <style>
+      :root {
+        --accent: #34d399; /* Emerald */
+        --accent-2: #22d3ee; /* Cyan */
+        --tip: #fcd34d; /* Amber */
+        --text: rgba(255, 255, 255, 0.96);
+        --text-2: rgba(255, 255, 255, 0.62);
+        --text-3: rgba(255, 255, 255, 0.38);
+        --hair: rgba(255, 255, 255, 0.08);
+        --glass: rgba(255, 255, 255, 0.05);
+        --radius: 18px;
+
+        /* --- vom Einstellungs-Menü steuerbar --- */
+        --base-size: 17px; /* Schriftgröße */
+        --bg-rgb: 9, 10, 16; /* Hintergrundton */
+        --bg-alpha: 0.6; /* Transparenz (0 = ganz durchsichtig) */
+        --col-text: #d8fff2; /* Schriftfarbe (Fließtext) */
+        --col-accent: #2dffb0; /* Akzentfarbe (Stages) */
+        --col-accent-2: #29e0ff; /* Akzentfarbe 2 (Verlauf) */
+        --col-tip: #ffe14d; /* Tipp-Farbe */
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+        font-family: -apple-system, "SF Pro Text", "Inter", "Segoe UI", sans-serif;
+        color: var(--text);
+        background: transparent;
+        overflow: hidden;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ---------- Glas-Panel mit Gradient-Hairline-Rahmen ---------- */
+      #app {
+        position: relative;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: linear-gradient(
+          180deg,
+          rgba(var(--bg-rgb), calc(var(--bg-alpha) - 0.09)) 0%,
+          rgba(var(--bg-rgb), var(--bg-alpha)) 100%
+        );
+        backdrop-filter: blur(18px) saturate(155%);
+        -webkit-backdrop-filter: blur(18px) saturate(155%);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+      /* feiner, leuchtender Gradient-Rand */
+      #app::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.28),
+          rgba(255, 255, 255, 0.04) 40%,
+          rgba(52, 211, 153, 0.18)
+        );
+        -webkit-mask: linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+        z-index: 5;
+      }
+
+      /* ---------- Kopfzeile (verschiebbar) ---------- */
+      header {
+        -webkit-app-region: drag;
+        position: relative;
+        padding: 13px 16px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      /* dünne Akzentlinie unter dem Header */
+      header::after {
+        content: "";
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--hair) 20%,
+          var(--hair) 80%,
+          transparent
+        );
+      }
+
+      /* Status-Pille */
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 11px 5px 9px;
+        border-radius: 999px;
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+      .status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #8b93a7;
+        position: relative;
+        transition: background 0.3s;
+      }
+      .status.live .dot {
+        background: var(--accent);
+      }
+      .status.live .dot::after {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        background: var(--accent);
+        opacity: 0.5;
+        animation: pulse 1.6s ease-out infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(0.6);
+          opacity: 0.55;
+        }
+        100% {
+          transform: scale(2.4);
+          opacity: 0;
+        }
+      }
+
+      .brand {
+        -webkit-app-region: no-drag;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* ---------- Sektionen ---------- */
+      .section {
+        padding: 14px 16px;
+        overflow-y: auto;
+      }
+      .label {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.66);
+        font-weight: 700;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+      }
+
+      /* Skript */
+      #script-section {
+        flex: 1 1 auto;
+        position: relative;
+      }
+      .script-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      #script {
+        font-size: var(--base-size);
+        line-height: 1.62;
+        color: var(--col-text);
+        letter-spacing: 0.002em;
+        /* dunkler Halo: macht jede Schrift auf hellem UND dunklem Grund lesbar */
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(0, 0, 0, 0.95),
+          0 0 1px rgba(0, 0, 0, 0.9);
+        font-weight: 500;
+      }
+      /* Titelzeile (z.B. "MMS – Setting Skript") */
+      #script .title {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      /* Stage A) B) C) … — große Akzent-Überschrift */
+      #script .stage {
+        margin: 18px 0 8px;
+        padding-left: 11px;
+        position: relative;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: linear-gradient(90deg, var(--col-accent), var(--col-accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        /* Halo für Verlaufstext über filter (text-shadow greift hier nicht) */
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.95))
+          drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
+      }
+      #script .stage::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 2px;
+        bottom: 2px;
+        width: 3px;
+        border-radius: 3px;
+        background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      }
+      /* Nummerierte Abschnitte (5. 6. …) */
+      #script .snum {
+        margin: 14px 0 6px;
+        font-size: 15px;
+        font-weight: 800;
+        color: #4dd2ff;
+        letter-spacing: 0.02em;
+      }
+      /* Unter-Überschriften ("Frame", "Vertiefung:", …) */
+      #script .sublabel {
+        margin: 11px 0 4px;
+        font-size: 14.5px;
+        font-weight: 700;
+        color: #5cf2b0;
+      }
+      /* Wartepausen [Auf Antwort warten] — als Pille */
+      #script .pause {
+        display: inline-block;
+        margin: 6px 0;
+        padding: 3px 11px;
+        font-size: 13px;
+        font-style: italic;
+        font-weight: 600;
+        color: #ffdf3d;
+        background: rgba(250, 204, 21, 0.16);
+        border: 1px solid rgba(250, 204, 21, 0.4);
+        border-radius: 999px;
+      }
+      /* Aufzählungspunkte */
+      #script .bullet {
+        position: relative;
+        padding-left: 16px;
+        margin: 3px 0;
+      }
+      #script .bullet::before {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 9px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--col-accent);
+        opacity: 0.9;
+      }
+      #script .line {
+        margin: 3px 0;
+      }
+      #script .sp {
+        height: 8px;
+      }
+
+      /* Live-Tipp — Premium-Karte mit Akzentleiste + sanftem Glow */
+      #tip-section {
+        flex: 0 0 auto;
+        max-height: 180px;
+        border-top: 1px solid var(--hair);
+        background: linear-gradient(
+          180deg,
+          rgba(252, 211, 77, 0.06),
+          rgba(252, 211, 77, 0)
+        );
+      }
+      .tip-head {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 8px;
+        color: var(--tip);
+      }
+      .tip-head .label {
+        color: var(--tip);
+        opacity: 0.85;
+      }
+      #tip-card {
+        position: relative;
+        padding: 12px 14px 12px 16px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.045);
+        border: 1px solid rgba(252, 211, 77, 0.14);
+        min-height: 40px;
+      }
+      #tip-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 10px;
+        bottom: 10px;
+        width: 3px;
+        border-radius: 3px;
+        background: linear-gradient(180deg, var(--tip), #f59e0b);
+      }
+      #tip {
+        font-size: var(--base-size);
+        line-height: 1.5;
+        color: var(--col-tip);
+        font-weight: 600;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(0, 0, 0, 0.95);
+      }
+      #tip.muted {
+        color: var(--text-3);
+        font-weight: 400;
+      }
+      /* sanftes Einblenden, wenn ein neuer Tipp kommt */
+      #tip-card.active {
+        animation: tipIn 0.45s ease;
+        box-shadow: 0 0 0 1px rgba(252, 211, 77, 0.18),
+          0 8px 30px rgba(252, 211, 77, 0.1);
+      }
+      @keyframes tipIn {
+        from {
+          transform: translateY(6px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      /* Transkript */
+      #transcript-section {
+        flex: 0 0 auto;
+        max-height: 96px;
+        border-top: 1px solid var(--hair);
+      }
+      .tx-head {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 7px;
+      }
+      #transcript {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: #bfe9ff;
+        font-style: italic;
+        text-shadow: 0 0 3px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.9);
+      }
+      #transcript.muted {
+        color: var(--text-3);
+        font-style: normal;
+      }
+      #transcript .tx-who {
+        font-style: normal;
+        font-weight: 700;
+        margin-right: 5px;
+      }
+      #transcript .tx-kunde {
+        color: #5ad8ff;
+      }
+      #transcript .tx-ich {
+        color: #ffd24d;
+      }
+
+      /* ---------- Steuerleiste ---------- */
+      footer {
+        -webkit-app-region: no-drag;
+        flex: 0 0 auto;
+        padding: 11px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        border-top: 1px solid var(--hair);
+        background: rgba(0, 0, 0, 0.22);
+      }
+      .src {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .src-ic {
+        font-size: 13px;
+        width: 18px;
+        text-align: center;
+      }
+      .src-lbl {
+        flex: 0 0 42px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-2);
+      }
+      .src select {
+        flex: 1;
+        min-width: 0;
+      }
+      /* Live-Eingangspegel: zeigt sofort, ob Ton vom Gerät kommt (auch im Note-Taker-Modus) */
+      .lvl {
+        flex: 0 0 44px;
+        height: 8px;
+        border-radius: 5px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+        transition: box-shadow 0.2s;
+      }
+      .lvl > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 0.08s linear;
+      }
+      /* bleibt eine aktive Quelle still -> rot umrandet als Warnsignal */
+      .lvl.silent {
+        box-shadow: 0 0 0 1px rgba(255, 90, 90, 0.7) inset;
+      }
+
+      select,
+      button,
+      #script-select {
+        -webkit-app-region: no-drag;
+        font-family: inherit;
+        font-size: 12px;
+        color: var(--text);
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        border-radius: 10px;
+        padding: 8px 11px;
+        cursor: pointer;
+        transition: background 0.18s, border-color 0.18s, transform 0.12s,
+          box-shadow 0.18s;
+        outline: none;
+      }
+      select:hover,
+      #script-select:hover {
+        background: rgba(255, 255, 255, 0.09);
+        border-color: rgba(255, 255, 255, 0.16);
+      }
+      #script-select {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 5px 9px;
+        border-radius: 8px;
+      }
+      #device-select {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* Primär-Button: Verlauf + Hover-Lift */
+      #listen-btn {
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        color: #04140d;
+        border: none;
+        padding: 9px 16px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 6px 18px rgba(34, 211, 153, 0.28);
+      }
+      #listen-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 9px 24px rgba(34, 211, 153, 0.38);
+      }
+      #listen-btn:active {
+        transform: translateY(0);
+      }
+      #listen-btn.stop {
+        color: var(--text);
+        background: rgba(248, 113, 113, 0.16);
+        border: 1px solid rgba(248, 113, 113, 0.4);
+        box-shadow: none;
+      }
+
+      .kbd {
+        font-size: 10px;
+        color: var(--text-3);
+        font-weight: 500;
+      }
+      .kbd b {
+        color: var(--text-2);
+        font-weight: 600;
+      }
+
+      .warn {
+        color: #fca5a5;
+        font-size: 11px;
+        line-height: 1.4;
+        padding: 9px 16px;
+        background: rgba(248, 113, 113, 0.08);
+        border-top: 1px solid rgba(248, 113, 113, 0.18);
+      }
+
+      /* ---------- Einstellungs-Menü ---------- */
+      .hgroup {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      #minbtn {
+        -webkit-app-region: no-drag;
+        font-size: 14px;
+        line-height: 1;
+        padding: 5px 10px;
+        border-radius: 9px;
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        color: var(--text-2);
+        cursor: pointer;
+        transition: color 0.15s, background 0.15s;
+      }
+      #minbtn:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.1);
+      }
+      #gear {
+        -webkit-app-region: no-drag;
+        font-size: 14px;
+        line-height: 1;
+        padding: 5px 8px;
+        border-radius: 9px;
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        color: var(--text-2);
+        cursor: pointer;
+        transition: color 0.15s, background 0.15s, transform 0.3s;
+      }
+      #gear:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.1);
+        transform: rotate(45deg);
+      }
+      #closebtn {
+        -webkit-app-region: no-drag;
+        font-size: 12px;
+        line-height: 1;
+        padding: 5px 9px;
+        border-radius: 9px;
+        background: rgba(248, 113, 113, 0.12);
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        color: #fca5a5;
+        cursor: pointer;
+        transition: color 0.15s, background 0.15s;
+      }
+      #closebtn:hover {
+        background: rgba(248, 113, 113, 0.28);
+        color: #fff;
+      }
+      #settings {
+        position: absolute;
+        top: 52px;
+        left: 14px;
+        right: 14px;
+        z-index: 30;
+        padding: 12px 14px 14px;
+        border-radius: 14px;
+        background: rgba(10, 11, 17, 0.97);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+        animation: tipIn 0.22s ease;
+      }
+      #settings.hidden {
+        display: none;
+      }
+      .set-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 9px 0;
+        font-size: 12px;
+        color: var(--text-2);
+      }
+      .set-row label {
+        flex: 0 0 90px;
+        font-weight: 600;
+      }
+      .set-row input[type="range"] {
+        flex: 1;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .set-row input[type="color"] {
+        width: 40px;
+        height: 26px;
+        padding: 0;
+        border: 1px solid var(--hair);
+        border-radius: 7px;
+        background: none;
+        cursor: pointer;
+      }
+      .set-row .val {
+        flex: 0 0 42px;
+        text-align: right;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+      }
+      #set-reset,
+      #set-calls {
+        width: 100%;
+        margin-top: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-2);
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        border-radius: 9px;
+        padding: 8px;
+        cursor: pointer;
+      }
+      #set-calls {
+        margin-top: 4px;
+      }
+      #set-reset:hover,
+      #set-calls:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+      #set-quit {
+        width: 100%;
+        margin-top: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #fca5a5;
+        background: rgba(248, 113, 113, 0.12);
+        border: 1px solid rgba(248, 113, 113, 0.35);
+        border-radius: 9px;
+        padding: 8px;
+        cursor: pointer;
+      }
+      #set-quit:hover {
+        background: rgba(248, 113, 113, 0.22);
+        color: #fff;
+      }
+      .set-sec {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        font-weight: 700;
+        margin: 12px 0 5px;
+      }
+      .set-sec:first-child {
+        margin-top: 0;
+      }
+      .set-hint {
+        font-size: 11px;
+        color: var(--text-3);
+        margin: 2px 0 4px;
+        min-height: 13px;
+      }
+      .set-row input[type="password"],
+      .set-row input[type="text"] {
+        flex: 1;
+        min-width: 0;
+        font-family: inherit;
+        font-size: 12px;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--hair);
+        border-radius: 8px;
+        padding: 6px 9px;
+        outline: none;
+      }
+
+      /* Skript-Aktionen (Dropdown + ＋ ✎ 🗑) */
+      .script-actions {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .script-actions select {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 5px 8px;
+        border-radius: 8px;
+      }
+      .script-actions button {
+        font-size: 12px;
+        line-height: 1;
+        padding: 5px 8px;
+        border-radius: 8px;
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        color: var(--text-2);
+        cursor: pointer;
+      }
+      .script-actions button:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--text);
+      }
+
+      /* Skript-Editor (Vollflächen-Overlay) */
+      #editor {
+        position: absolute;
+        inset: 44px 12px 12px;
+        z-index: 40;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 14px 14px;
+        border-radius: 14px;
+        background: rgba(10, 11, 17, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6);
+        animation: tipIn 0.22s ease;
+      }
+      #editor.hidden {
+        display: none;
+      }
+      #ed-name {
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--hair);
+        border-radius: 8px;
+        padding: 8px 10px;
+        outline: none;
+      }
+      #ed-content {
+        flex: 1;
+        resize: none;
+        font-family: inherit;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--hair);
+        border-radius: 10px;
+        padding: 10px 12px;
+        outline: none;
+      }
+      .ed-btns {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .ed-btns button {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 9px;
+        background: var(--glass);
+        border: 1px solid var(--hair);
+        color: var(--text-2);
+        cursor: pointer;
+      }
+      .ed-btns button.primary {
+        color: #04140d;
+        border: none;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+      .ed-btns button:hover {
+        filter: brightness(1.08);
+      }
+
+      /* ---------- feines Scrollbar-Design ---------- */
+      ::-webkit-scrollbar {
+        width: 7px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.22);
+        background-clip: padding-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <span class="status" id="status">
+          <span class="dot" id="status-dot"></span>
+          <span id="status-text">Bereit</span>
+        </span>
+        <span class="hgroup">
+          <span class="brand">Sales Copilot</span>
+          <button id="minbtn" title="Minimieren (⌘⇧H) — läuft im Tray weiter">–</button>
+          <button id="gear" title="Einstellungen">⚙</button>
+          <button id="closebtn" title="Beenden (⌘⇧Q)">✕</button>
+        </span>
+      </header>
+
+      <div id="settings" class="hidden">
+        <div class="set-sec">Verbindung (API-Keys)</div>
+        <div class="set-row">
+          <label>Deepgram</label>
+          <input type="password" id="set-deepgram" placeholder="Key für Mithören" />
+        </div>
+        <div class="set-row">
+          <label>Call-Sprache</label>
+          <select id="set-lang" title="Sprache der Transkription">
+            <option value="de">Deutsch</option>
+            <option value="en">Englisch</option>
+            <option value="multi">Auto (gemischt)</option>
+          </select>
+        </div>
+        <div class="set-hint" id="keys-hint"></div>
+
+        <div class="set-sec">Darstellung</div>
+        <div class="set-row">
+          <label>Schriftgröße</label>
+          <input type="range" id="set-size" min="12" max="30" step="1" />
+          <span class="val" id="set-size-val"></span>
+        </div>
+        <div class="set-row">
+          <label>Transparenz</label>
+          <input type="range" id="set-alpha" min="10" max="92" step="2" />
+          <span class="val" id="set-alpha-val"></span>
+        </div>
+        <div class="set-row">
+          <label>Schriftfarbe</label>
+          <input type="color" id="set-text" />
+        </div>
+        <div class="set-row">
+          <label>Akzentfarbe</label>
+          <input type="color" id="set-accent" />
+        </div>
+        <div class="set-row">
+          <label>Tipp-Farbe</label>
+          <input type="color" id="set-tip" />
+        </div>
+        <div class="set-row">
+          <label>Hintergrund</label>
+          <input type="color" id="set-bg" />
+        </div>
+        <div class="set-sec">Auswertungen</div>
+        <button id="set-calls">📁 Call-Auswertungen öffnen</button>
+
+        <button id="set-reset">Zurücksetzen</button>
+        <button id="set-quit">App beenden</button>
+      </div>
+
+      <div id="editor" class="hidden">
+        <div class="set-sec" id="ed-title">Neues Skript</div>
+        <input type="text" id="ed-name" placeholder="Name (z. B. Setting, Closing)" />
+        <textarea id="ed-content" placeholder="Skript-Text hier einfügen …"></textarea>
+        <div class="ed-btns">
+          <button id="ed-cancel">Abbrechen</button>
+          <button id="ed-save" class="primary">Speichern</button>
+        </div>
+      </div>
+
+      <div class="section" id="script-section">
+        <div class="script-head">
+          <div class="label">Skript</div>
+          <div class="script-actions">
+            <select id="script-select" title="Skript wählen"></select>
+            <button id="script-new" title="Neues Skript">＋</button>
+            <button id="script-edit" title="Bearbeiten">✎</button>
+            <button id="script-del" title="Löschen">🗑</button>
+          </div>
+        </div>
+        <div id="script">Lade Skript …</div>
+      </div>
+
+      <div class="section" id="tip-section">
+        <div class="tip-head">
+          <span class="label">Live-Tipp</span>
+        </div>
+        <div id="tip-card">
+          <div id="tip" class="muted">
+            Starte das Mithören, um Live-Tipps zu bekommen.
+          </div>
+        </div>
+      </div>
+
+      <div class="section" id="transcript-section">
+        <div class="tx-head">
+          <span class="label">Mitschrift</span>
+        </div>
+        <div id="transcript" class="muted">—</div>
+      </div>
+
+      <div id="warn" class="warn" style="display: none"></div>
+
+      <footer>
+        <div class="src">
+          <span class="src-ic">🎤</span>
+          <span class="src-lbl">Ich</span>
+          <select id="mic-select" title="Mein Mikrofon"></select>
+          <span class="lvl" id="mic-lvl" title="Eingangspegel Mikrofon"><i></i></span>
+        </div>
+        <div class="src">
+          <span class="src-ic">🔊</span>
+          <span class="src-lbl">Kunde</span>
+          <select id="sys-select" title="System-Audio / Kunde (BlackHole)"></select>
+          <span class="lvl" id="sys-lvl" title="Eingangspegel Kunde (BlackHole)"><i></i></span>
+        </div>
+        <div class="src">
+          <span class="src-ic">🌐</span>
+          <span class="src-lbl">Sprache</span>
+          <select id="foot-lang" title="Call-Sprache: vor dem Call wählen (Deutsch / Englisch / Auto)">
+            <option value="de">DE</option>
+            <option value="en">EN</option>
+            <option value="multi">Auto</option>
+          </select>
+        </div>
+        <button id="listen-btn">Mithören</button>
+      </footer>
+
+      <div style="padding: 0 16px 10px" class="kbd">
+        <b>⌘⇧K</b> Klick durch &nbsp;·&nbsp; <b>⌘⇧H</b> Ein-/Ausblenden
+        &nbsp;·&nbsp; <b>⌘⇧Q</b> App beenden
+      </div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>

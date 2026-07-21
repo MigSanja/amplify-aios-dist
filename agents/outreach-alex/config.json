@@ -1,0 +1,29 @@
+{
+  "enabled": true,
+  "department": "sales",
+  "channel": "linkedin",
+  "account": "der Nutzer",
+  "chromeProfile": "Default",
+  "verifyAccount": "<ACCOUNT_EMAIL>",
+  "browserDeviceId": "<BROWSER_DEVICE_ID>",
+  "browserPort": 9222,
+  "userDataDir": "~/.jarvis-chrome/alex",
+  "model": "claude-sonnet-4-6",
+  "limits": {
+    "connectsPerDay": 25,
+    "messagesPerDay": 15,
+    "delaySecMin": 60,
+    "delaySecMax": 180
+  },
+  "_rampHinweis": "19.07. auf des Nutzers Ansage auf VOLLE 25/Tag hochgesetzt (Ramp beendet). ZIEL im Tageslauf = 25 Vernetzungen (ICP >=7) ueber so viele Suchseiten wie noetig. Sales-Nav-Limit liegt bei 150-200/Woche, nie auf 40/Tag. Bei Konto-Warnung sofort auf 15 zurueck.",
+  "startTime": "07:00",
+  "sequential": true,
+  "schedule": {
+    "Leads Daily": "07:00 Start",
+    "Vernetzung-Sync": "→ danach",
+    "Outreach": "→ danach",
+    "InMails": "→ danach",
+    "Follow-ups": "→ danach"
+  },
+  "memesFolder": "$HOME/AIOS/assets/memes"
+}

@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "department": "sales",
+  "channel": "whatsapp",
+  "account": "<WHATSAPP_PHONE>",
+  "type": "bot",
+  "model": "claude-sonnet-4-6",
+  "limits": {
+    "messagesPerDay": 50,
+    "delaySecMin": 60,
+    "delaySecMax": 180
+  },
+  "quietHours": { "from": 9, "to": 19 },
+  "schedule": {
+    "Antworten": "sofort (Webhook, 90s Debounce)",
+    "Kampagnen-Sends": "alle 5 Min via Tick, 9-19 Uhr",
+    "Follow-ups": "dynamisch, +2 Tage nach Erstkontakt"
+  }
+}

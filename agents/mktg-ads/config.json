@@ -1,0 +1,6 @@
+{
+  "enabled": false,
+  "department": "marketing",
+  "model": "claude-sonnet-4-6",
+  "skills": ["ads","ad-creative","ab-testing","analytics"]
+}

@@ -1,0 +1,14 @@
+{
+  "_comment": "Modul-Status fürs Dashboard. configured=false -> Sidebar zeigt 'jetzt einrichten'-Platzhalter. Das Onboarding (/aios-setup) setzt configured=true, sobald ein Modul eingerichtet ist. Kern-Module (Command Center, Second Brain, Copilot, To-Dos, Agents, Einstellungen) sind immer aktiv und stehen hier nicht.",
+  "whatsapp":        { "configured": false, "label": "WhatsApp-Outreach", "desc": "Alt-Kontakte reaktivieren, Kampagnen, KI-Setter. Verbinde dein eigenes WhatsApp Business (Meta Cloud API)." },
+  "contentpipeline": { "configured": false, "label": "Content Pipeline", "desc": "Videos/Instagram-Links reindroppen, die KI merkt sie als Content-Ideen. Der Nachtwerker füllt Ideen nach." },
+  "outreach":        { "configured": false, "label": "LinkedIn-Outreach", "desc": "LinkedIn/Sales-Navigator-Agent. Braucht deinen LinkedIn-Account, daher bewusst als späterer Schritt." },
+  "salescopilot":    { "configured": false, "label": "Sales Copilot / Note Taker", "desc": "Call-Transkription + Recap ins Brain (Deepgram + BlackHole)." },
+  "finanzen":        { "configured": false, "label": "Finanzen", "desc": "Einnahmen/Ausgaben, Konten (Open Banking). Optional." },
+  "rechnungen":      { "configured": false, "label": "Rechnungen", "desc": "Rechnungen bauen, PDF, Zahlungsabgleich, Mahnwesen. Optional." },
+  "pipeline":        { "configured": false, "label": "Sales-Pipeline / CRM", "desc": "Lead- und Deal-Verwaltung. Optional." },
+  "projekte":        { "configured": false, "label": "Projekt-Board", "desc": "Delivery-Board für Kundenprojekte. Optional." },
+  "inbox":           { "configured": false, "label": "Action Needed", "desc": "Gmail-Triage + Termin-Signale (Mail-/Kalender-Watcher). Optional." },
+  "proposals":       { "configured": false, "label": "Proposals", "desc": "Angebots-/Proposal-Modul. Optional." },
+  "analyse":         { "configured": false, "label": "KI-Analyse", "desc": "Auswertungen und Reports. Optional." }
+}

@@ -1,0 +1,74 @@
+:root{
+  --bg:#070510; --ink:#f0eaff; --dim:#8f86ad; --vio:#a78bfa; --teal:#3fd0c9; --gold:#ffcf6b;
+  --hair:rgba(167,139,250,.16); --panelbg:rgba(12,8,24,.86);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 "Sora",sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0;cursor:grab}
+#stage.drag{cursor:grabbing}
+
+/* Kopfzeile */
+#topbar{position:fixed;inset:0 0 auto 0;height:52px;display:flex;align-items:center;gap:18px;
+  padding:0 20px;z-index:30;border-bottom:1px solid var(--hair);
+  background:linear-gradient(180deg,rgba(7,5,16,.92),rgba(7,5,16,.5) 70%,transparent)}
+.brand{font-size:11px;letter-spacing:.32em;color:var(--dim)}
+.title{font:italic 300 22px/1 "Fraunces",serif}
+.title em{color:var(--vio)}
+#topbar .spacer{flex:1}
+#topbar .back{font-size:12px;letter-spacing:.06em;color:var(--dim);text-decoration:none;
+  border:1px solid var(--hair);padding:5px 11px;border-radius:99px}
+#topbar .back:hover{color:var(--ink);border-color:var(--vio)}
+#clock{font-size:12px;color:var(--dim);letter-spacing:.14em;font-variant-numeric:tabular-nums}
+
+/* Live-Feed links */
+#feed{position:fixed;left:0;top:52px;bottom:0;width:290px;z-index:20;padding:18px 6px 18px 18px;
+  display:flex;flex-direction:column;gap:10px;
+  background:linear-gradient(90deg,rgba(7,5,16,.9) 62%,transparent);pointer-events:none}
+#feed h2{font-size:10px;letter-spacing:.3em;color:var(--dim);font-weight:400}
+#feedlist{list-style:none;overflow:hidden;display:flex;flex-direction:column;gap:9px}
+#feedlist li{display:flex;gap:9px;align-items:baseline;font-size:12px;color:var(--dim);
+  opacity:0;transform:translateY(-4px);transition:opacity .6s,transform .6s}
+#feedlist li.in{opacity:1;transform:none}
+#feedlist li .t{font-variant-numeric:tabular-nums;font-size:10px;min-width:34px}
+#feedlist li .d{width:5px;height:5px;border-radius:50%;flex:none;position:relative;top:-2px}
+#feedlist li .x{color:#c9bfe4}
+
+/* Detail-Panel rechts */
+#panel{position:fixed;right:0;top:52px;bottom:0;width:344px;z-index:25;padding:26px 24px;
+  background:var(--panelbg);backdrop-filter:blur(12px);border-left:1px solid var(--hair);
+  transform:translateX(105%);transition:transform .45s cubic-bezier(.22,.9,.24,1)}
+#panel.open{transform:none}
+#panel .close{position:absolute;top:14px;right:16px;background:none;border:0;color:var(--dim);font-size:16px;cursor:pointer}
+#panel .eyebrow{font-size:10px;letter-spacing:.3em;color:var(--teal)}
+#panel h3{font:italic 300 30px/1.15 "Fraunces",serif;margin:8px 0 2px}
+#panel .p-sub{font-size:12.5px;color:var(--dim);margin-bottom:12px}
+#panel .status{display:inline-block;margin:0 0 18px;padding:3px 10px;border:1px solid var(--hair);
+  border-radius:99px;font-size:11px;letter-spacing:.12em;color:var(--dim)}
+#panel .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+#panel .kpi{background:rgba(167,139,250,.07);border:1px solid var(--hair);border-radius:12px;padding:12px}
+#panel .kpi b{display:block;font-size:17px;font-weight:500}
+#panel .kpi span{font-size:10px;letter-spacing:.14em;color:var(--dim)}
+#panel h4{font-size:10px;letter-spacing:.3em;color:var(--dim);font-weight:400;margin-bottom:10px}
+#panel ol{list-style:none;display:flex;flex-direction:column;gap:9px;font-size:12.5px;color:#c9bfe4;margin-bottom:18px}
+#panel ol li::before{content:"◦";color:var(--vio);margin-right:8px}
+#panel .deep{display:inline-block;font-size:12px;letter-spacing:.06em;color:var(--vio);
+  text-decoration:none;border:1px solid var(--hair);padding:8px 14px;border-radius:99px}
+#panel .deep:hover{border-color:var(--vio);background:rgba(167,139,250,.1)}
+
+#hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:20;font-size:10.5px;
+  letter-spacing:.22em;color:var(--dim);opacity:0;transition:opacity 1.2s}
+#hint.in{opacity:.8}
+#err{position:fixed;inset:0;place-items:center;z-index:40;color:#f472b6;
+  font-size:14px;background:var(--bg);text-align:center;padding:40px;display:none}
+#err.show{display:grid}
+
+/* Banner-Modus (?banner=1) — LinkedIn-Titelbild 1584×396 */
+body.banner #topbar,body.banner #feed,body.banner #panel,body.banner #hint{display:none}
+body.banner #bannerline{display:block;position:fixed;right:6%;top:50%;transform:translateY(-50%);
+  z-index:20;text-align:right;pointer-events:none}
+#bannerline .bl-main{font:600 40px/1.08 "Sora",sans-serif;color:#fff;letter-spacing:-.01em;
+  text-shadow:0 2px 30px rgba(0,0,0,.6)}
+#bannerline .bl-sub{margin-top:14px;font:italic 300 20px/1 "Fraunces",serif;color:var(--vio)}
+
+@media (prefers-reduced-motion: reduce){ #feedlist li{transition:none} #panel{transition:none} }
