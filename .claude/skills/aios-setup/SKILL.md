@@ -96,7 +96,13 @@ Frag pro Modul knapp, ob jetzt oder später. Bei „später" bleibt es Platzhalt
 - **Lead-Sourcing**: B2B-Listen (Keys `APIFY_TOKEN`, `ANYMAILFINDER_API_KEY`, `MILLIONVERIFIER_API_KEY`).
   Er verknüpft **sein eigenes Google Drive** (dort werden Ordner + Sheets pro Batch angelegt) und sein
   eigenes Google-Konto (OAuth). Es sind keine fremden Sheets/IDs vorbelegt, alles baut auf seinem Konto auf.
-- **Note Taker / Sales Copilot**: `DEEPGRAM_API_KEY` + BlackHole-Audiogerät. `npm install` in `sales-copilot/`.
+- **Note Taker / Sales Copilot**: Electron-App (`npm install` in `sales-copilot/`, läuft auf Mac + Windows) +
+  `DEEPGRAM_API_KEY`. **Der Audio-Mitschnitt (beide Gesprächsseiten) ist der kniffligste, OS-abhängige Teil:**
+  - **Mac:** BlackHole als Loopback-Gerät installieren + als Eingang wählen (war die ursprüngliche Variante).
+  - **Windows:** VB-Audio Cable installieren, als Loopback einrichten und als Aufnahmegerät wählen. Das ist
+    etwas mehr Aufwand: **richte es Schritt für Schritt mit ihm ein** (Download, Neustart, Gerät als Standard/
+    Eingang setzen, in der App das richtige Gerät wählen). Bei Unklarheit fragen statt raten.
+  Wenn er das jetzt nicht will: „später" (Platzhalter), er startet erstmal mit WhatsApp.
 - **Rechnungstool**: leeres Tool. Frag: „Sollen wir dein Rechnungstool einrichten? Gib mir deine Firma,
   Adresse, Bankdaten und dein Logo." Trag das in die Absenderfelder ein (Logo als Bild/Datei), dann macht
   er Rechnungen mit seinem Branding. Nichts ist vorbefüllt, es startet komplett leer.
