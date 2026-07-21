@@ -13,10 +13,18 @@ Schritt ist überspringbar**: „später" ist immer eine gültige Antwort, das M
 Der Nutzer will meistens **zuerst WhatsApp-Outreach** (alte Kontakte reaktivieren). Halte den Weg dahin
 kurz; alles andere kann warten.
 
-## Phase 0: Voraussetzungen
-- macOS (`sw_vers`). Node ≥ 18 (`node -v`, echten Pfad merken: `command -v node`). Git. Google Chrome.
+## Phase 0: Voraussetzungen + Plattform erkennen
+- **Erkenne zuerst das Betriebssystem** (`node -p process.platform` → `darwin`=macOS, `win32`=Windows,
+  `linux`). Danach richtet sich alles Weitere. Der Kern läuft auf allen gleich, nur die OS-Spezifika unterscheiden sich:
+  - **Pfade:** `~/AIOS` (Mac/Linux) bzw. `%USERPROFILE%\AIOS` (Windows).
+  - **Hintergrund-Jobs:** Mac → launchd (`templates/launchd/`); Windows → Task Scheduler
+    (`templates/windows/register-job.ps1`); Linux → cron.
+  - **Shell-Job-Skripte** (`dashboard/*.sh`) laufen auf Windows über **Git Bash** (kommt mit Git for Windows).
+  - **Note-Taker-Audio:** Mac = BlackHole, Windows = VB-Audio Cable.
+  - **Kern (Dashboard, Copilot, Brain, WhatsApp)** läuft auf beiden nativ mit Node, ohne OS-Spezifika.
+- Node ≥ 18 (`node -v`; echten Pfad: `command -v node` bzw. `(Get-Command node).Source`). Git. Google Chrome.
 - Claude Code läuft (bist du). Claude nutzt die **Subscription** (claude-CLI), kein API-Key nötig.
-- Fehlt etwas → sagen, wie es installiert wird, dann weiter. Nicht raten.
+- Fehlt etwas → sagen, wie es installiert wird (Mac: `brew`, Windows: `winget`), dann weiter. Nicht raten.
 
 ## Phase 1: Sicherheits-Selbstcheck (kurz)
 Dies ist ein frisches Produkt-Repo, es darf keine Fremddaten enthalten. Prüfe:
@@ -105,9 +113,14 @@ den OAuth-Flow. Es wird nie ein fremdes Konto/Drive genutzt.
 ## Phase 3: Aktivierung
 Für jedes eingerichtete Modul:
 1. `config/modules.json` → `"<modul>": { "configured": true }`.
-2. Zugehörige launchd-Jobs aus `templates/launchd/com.aios.JOB.plist.tmpl` rendern (echten `__NODE__`-Pfad,
-   `__REPO__` = dieser Ordner, `__SCRIPT__`, `__LOG__`, `__SCHEDULE__`), nach `~/Library/LaunchAgents/`
-   schreiben und laden: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<LABEL>.plist`.
+2. Hintergrund-Jobs plattformgerecht registrieren:
+   - **macOS:** launchd-Jobs aus `templates/launchd/com.aios.JOB.plist.tmpl` rendern (echten `__NODE__`-Pfad,
+     `__REPO__` = dieser Ordner, `__SCRIPT__`, `__LOG__`, `__SCHEDULE__`), nach `~/Library/LaunchAgents/`
+     schreiben und laden: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/<LABEL>.plist`.
+   - **Windows:** je Job `templates/windows/register-job.ps1` aufrufen, z.B.
+     `powershell -File templates\windows\register-job.ps1 -Label aios-nightwork -Script nightwork.sh -At 23:30`
+     (oder `-EveryMinutes 10`). Prüfen: `Get-ScheduledTask -TaskName aios-*`. Die `.sh` laufen über Git Bash.
+   - **Linux:** entsprechende cron-Einträge (`crontab -e`) auf `node run-job.js dashboard/<script>.sh`.
    Jobs pro Modul (Auswahl): WhatsApp → `wa-tunnel.sh` (RunAtLoad), `wa-heartbeat.sh` (600s);
    Nachtwerker → `nightwork.sh` (23:30); Heartbeat → `heartbeat.sh` (stündlich); Content → `competitor-watch.sh` (08:30);
    Telegram → `telegram-bot.js` (RunAtLoad, direkt via node, ohne run-job.js); Watcher → `watcher.sh` (600s).

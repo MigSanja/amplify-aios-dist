@@ -16,7 +16,11 @@ die()  { printf "\033[1;31m✗\033[0m %s\n" "$*" >&2; exit 1; }
 say "AIOS wird installiert…"
 
 # ---- Voraussetzungen ----
-[ "$(uname)" = "Darwin" ] || die "Läuft aktuell nur auf macOS."
+case "$(uname)" in
+  Darwin) ;;
+  Linux)  warn "Linux erkannt: Kern läuft, einige Mac-Features (BlackHole/launchd) weichen ab. Claude Code passt es an." ;;
+  *)      die "Windows? Nutze den PowerShell-Installer: irm https://raw.githubusercontent.com/MigSanja/amplify-aios-dist/main/install.ps1 | iex" ;;
+esac
 command -v git >/dev/null 2>&1 || die "Git fehlt. Installiere die Xcode Command Line Tools: xcode-select --install"
 
 if ! command -v node >/dev/null 2>&1; then
