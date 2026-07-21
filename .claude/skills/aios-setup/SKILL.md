@@ -24,6 +24,17 @@ Dies ist ein frisches Produkt-Repo, es darf keine Fremddaten enthalten. Prüfe:
 - `brain/` ist leer oder gehört dem Nutzer. `dashboard/data/` ist leer/neu.
 Falls doch fremde Daten auftauchen → **STOPP + melden**, nicht weitermachen.
 
+## ADDITIV, niemals überschreiben (Grundregel)
+Der Nutzer hat auf seinem Rechner meist schon Einiges: eine globale `~/.claude/CLAUDE.md` (seine
+Instruktionen), eigene Skills/Commands, ein Obsidian-Brain, evtl. eigene Configs. **Nichts davon überschreiben.**
+- Das AIOS lebt komplett in `~/AIOS` und ist in sich geschlossen. Die `~/AIOS/CLAUDE.md` gilt NUR im
+  `~/AIOS`-Ordner und läuft ZUSÄTZLICH zu seiner globalen `~/.claude/CLAUDE.md` (Claude Code lädt beide,
+  sie ergänzen sich, keine überschreibt die andere).
+- Wenn du Bestehendes einbindest (Brain, Instruktionen, Configs): **lesen und ERGÄNZEN**, nie ersetzen.
+  Bei Konflikt oder wenn eine Datei schon existiert → **fragen**, nicht drüberbügeln.
+- Existiert `~/AIOS` schon → der Installer bricht bewusst ab (kein Clobber). Auch bei erneutem `/aios-setup`:
+  vorhandene `.env`, `config/*.json`, `brain/` nur ergänzen.
+
 ## Phase 2: Interview (eine Frage nach der anderen)
 
 ### a) Brain einbinden ZUERST (das ist dem Nutzer wichtig)
